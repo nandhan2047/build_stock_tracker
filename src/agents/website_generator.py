@@ -300,3 +300,5 @@ class HTMLWebsiteGenerator:
            peer_names=json.dumps(peer_names), peer_pe=json.dumps(peer_pe),
            macro_sectors=json.dumps(macro_sectors), macro_impacts=json.dumps(macro_impacts),
            analysis_date=analysis_date, analysis_datetime=analysis_datetime, cache_hit_str=cache_hit_str, exec_time=exec_time)
+
+        return html
