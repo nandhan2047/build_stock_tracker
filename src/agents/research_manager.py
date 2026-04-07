@@ -184,7 +184,7 @@ Industry:       {result.stock_info.industry if result.stock_info else 'N/A'}
 💰 KEY METRICS
 {'─' * 80}
 Current Price:  ${result.stock_metrics.price if result.stock_metrics else 'N/A'}
-Market Cap:     ${result.stock_metrics.market_cap:,.0f} if result.stock_metrics and result.stock_metrics.market_cap else 'N/A'}
+Market Cap:     {f"${result.stock_metrics.market_cap:,.0f}" if result.stock_metrics and result.stock_metrics.market_cap else 'N/A'}
 P/E Ratio:      {result.stock_metrics.pe_ratio if result.stock_metrics else 'N/A'}
 Forward P/E:    {result.stock_metrics.forward_pe if result.stock_metrics else 'N/A'}
 PEG Ratio:      {result.stock_metrics.peg_ratio if result.stock_metrics else 'N/A'}
