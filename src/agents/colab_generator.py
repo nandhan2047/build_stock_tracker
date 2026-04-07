@@ -13,7 +13,7 @@ sys.path.insert(0, str(project_root))
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict
 
 from src.utils.logger import setup_logger
 from src.models.stock_data import AnalysisResult

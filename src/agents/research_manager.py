@@ -139,7 +139,7 @@ class ResearchManager:
                 colab_gen = ColabGenerator()
                 script_path = colab_gen.generate(
                     analysis_result=result,
-                    output_dir="/home/claude/build_stock_tracker/notebooks/generated_scripts",
+                    output_dir=None,  # Uses default path from ColabGenerator
                 )
                 result.colab_script_path = script_path
                 logger.info(f"✓ Colab script generated: {script_path}")
