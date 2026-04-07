@@ -125,6 +125,8 @@ class HTMLWebsiteGenerator:
 
         analysis_date = datetime.now().strftime('%Y-%m-%d')
         analysis_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        cache_hit_str = 'Yes' if result.cache_hit else 'No'
+        exec_time = f"{result.execution_time_seconds:.1f}" if result.execution_time_seconds else "0.0"
 
         html = """
 <!DOCTYPE html>
@@ -177,11 +179,11 @@ class HTMLWebsiteGenerator:
                 </div>
                 <div class="info-card">
                     <label>Cache Hit</label>
-                    <div class="value">{('Yes' if result.cache_hit else 'No')}</div>
+                    <div class="value">{cache_hit_str}</div>
                 </div>
                 <div class="info-card">
                     <label>Execution Time</label>
-                    <div class="value">{result.execution_time_seconds:.1f}s</div>
+                    <div class="value">{exec_time}s</div>
                 </div>
             </div>
         </header>
@@ -274,7 +276,7 @@ class HTMLWebsiteGenerator:
             event.target.classList.add('active');
         }}
 
-        const peersData = {json.dumps(peer_names)};
+        const peersData = {peer_names};
         const peersTable = document.getElementById('peers-table');
         peersData.forEach(ticker => {{
             const row = document.createElement('tr');
@@ -283,17 +285,18 @@ class HTMLWebsiteGenerator:
             peersTable.appendChild(row);
         }});
 
-        Plotly.newPlot('metrics-chart', [{{'x': ['P/E', 'ROE', 'D/E', 'Current'], 'y': [{target_pe}, {roe_val or 0}, {de_val or 0}, {cr_val or 0}], 'type': 'bar', 'marker': {{'color': '#38bdf8'}}}}], {{'title': 'Financial Metrics', 'plot_bgcolor': '#0f172a', 'paper_bgcolor': '#1e293b', 'font': {{'color': '#e2e8f0'}}}});
+        const metricsY = [{target_pe}, 0, 0, 0];
+        Plotly.newPlot('metrics-chart', [{{'x': ['P/E', 'ROE', 'D/E', 'Current'], 'y': metricsY, 'type': 'bar', 'marker': {{'color': '#38bdf8'}}}}], {{'title': 'Financial Metrics', 'plot_bgcolor': '#0f172a', 'paper_bgcolor': '#1e293b', 'font': {{'color': '#e2e8f0'}}}});
 
-        Plotly.newPlot('peers-chart', [{{'x': {json.dumps(peer_names)}, 'y': {json.dumps(peer_pe)}, 'type': 'bar', 'marker': {{'color': '#fbbf24'}}, 'name': 'Peers'}}, {{'x': ['{ticker}'], 'y': [{target_pe}], 'type': 'bar', 'marker': {{'color': '#10b981'}}, 'name': 'Target'}}], {{'title': 'P/E Comparison', 'plot_bgcolor': '#0f172a', 'paper_bgcolor': '#1e293b', 'font': {{'color': '#e2e8f0'}}}});
+        Plotly.newPlot('peers-chart', [{{'x': {peer_names}, 'y': {peer_pe}, 'type': 'bar', 'marker': {{'color': '#fbbf24'}}, 'name': 'Peers'}}, {{'x': ['{ticker}'], 'y': [{target_pe}], 'type': 'bar', 'marker': {{'color': '#10b981'}}, 'name': 'Target'}}], {{'title': 'P/E Comparison', 'plot_bgcolor': '#0f172a', 'paper_bgcolor': '#1e293b', 'font': {{'color': '#e2e8f0'}}}});
 
-        Plotly.newPlot('macro-chart', [{{'x': {json.dumps(macro_sectors)}, 'y': {json.dumps(macro_impacts)}, 'type': 'bar', 'marker': {{'color': '#38bdf8'}}}}], {{'title': 'Macro Impact', 'plot_bgcolor': '#0f172a', 'paper_bgcolor': '#1e293b', 'font': {{'color': '#e2e8f0'}}}});
+        Plotly.newPlot('macro-chart', [{{'x': {macro_sectors}, 'y': {macro_impacts}, 'type': 'bar', 'marker': {{'color': '#38bdf8'}}}}], {{'title': 'Macro Impact', 'plot_bgcolor': '#0f172a', 'paper_bgcolor': '#1e293b', 'font': {{'color': '#e2e8f0'}}}});
     </script>
 </body>
 </html>
 """.format(ticker=ticker, stock_name=stock_name, sector=sector, market_cap_val=market_cap_val,
            pe_val=pe_val, week_high=week_high, week_low=week_low, roe_val=roe_val, de_val=de_val,
-           cr_val=cr_val, pm_val=pm_val, target_pe=target_pe,
+           cr_val=cr_val, pm_val=pm_val, target_pe=target_pe or 0,
            peer_names=json.dumps(peer_names), peer_pe=json.dumps(peer_pe),
            macro_sectors=json.dumps(macro_sectors), macro_impacts=json.dumps(macro_impacts),
-           analysis_date=analysis_date, analysis_datetime=analysis_datetime)
+           analysis_date=analysis_date, analysis_datetime=analysis_datetime, cache_hit_str=cache_hit_str, exec_time=exec_time)

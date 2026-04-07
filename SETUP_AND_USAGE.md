@@ -324,8 +324,10 @@ plotly             - Interactive charts
 ✓ **Hardcoded paths** - All use dynamic Path(__file__) now
 ✓ **Missing files** - Created data_cleaning.py + calculations.py
 ✓ **Colab setup** - Use ZIP extraction (not git clone)
-✓ **Website generation** - NEW HTMLWebsiteGenerator class
+✓ **Website generation** - NEW HTMLWebsiteGenerator class (Plotly charts)
 ✓ **Colab utils** - NEW colab_utils.py for public URLs + display
+✓ **Website format string** - Fixed template syntax in website_generator.py (Apr 7)
+✓ **JavaScript escaping** - Fixed Plotly chart generation in HTML output (Apr 7)
 
 ---
 
