@@ -1,56 +1,61 @@
-# 🚀 Google Colab Setup Guide
+# 🚀 Google Colab Setup Guide (Fixed!)
 
-## Quick Start (3 Minutes)
+## ⚡ Quick Start (3 Minutes - Zip Method)
 
-### Cell 1: Install Dependencies & Clone Repo
+### Cell 1: Download & Extract Repo
 ```python
-import subprocess, sys, os
+import os, zipfile, subprocess, sys
 
-# Install all required packages (idempotent - safe to run multiple times)
+# Download ZIP from GitHub
+subprocess.run(["curl", "-L", "-o", "/tmp/repo.zip",
+                "https://github.com/YOUR_USERNAME/build_stock_tracker/archive/refs/heads/main.zip"],
+               capture_output=True)
+
+# Extract
+extract_dir = '/content/build_stock_tracker'
+os.makedirs(extract_dir, exist_ok=True)
+with zipfile.ZipFile('/tmp/repo.zip', 'r') as zip_ref:
+    zip_ref.extractall(extract_dir)
+
+# Move extracted content to correct level (remove 'main' subfolder)
+import shutil
+extracted = os.path.join(extract_dir, [f for f in os.listdir(extract_dir) if 'build_stock_tracker' in f][0])
+for item in os.listdir(extracted):
+    shutil.move(os.path.join(extracted, item), os.path.join(extract_dir, item))
+shutil.rmtree(extracted)
+
+# Install dependencies
 deps = ["yfinance", "pandas", "requests", "beautifulsoup4", "pydantic", "plotly"]
 subprocess.run(["pip", "install", "-q"] + deps, capture_output=True)
 
-# Clone repo (checks if already cloned)
-repo_path = "/content/build_stock_tracker"
-if not os.path.exists(repo_path):
-    print("📥 Cloning repository...")
-    subprocess.run(["git", "clone",
-                    "https://github.com/YOUR_USERNAME/build_stock_tracker.git",
-                    repo_path], capture_output=True)
-else:
-    print("✓ Repository already cloned")
-
-# Setup Python path
-sys.path.insert(0, repo_path)
-
+# Setup path
+sys.path.insert(0, extract_dir)
 print("✅ Environment ready!")
 ```
 
-### Cell 2: Quick Test
+### Cell 2: Verify Imports
 ```python
 import sys
-sys.path.insert(0, "/content/build_stock_tracker")
+sys.path.insert(0, '/content/build_stock_tracker')
 
 try:
     from src.agents.research_manager import ResearchManager
     from src.models.stock_data import AnalysisConfig
+    from src.utils.data_cleaning import clean_numeric_value
     print("✅ All imports successful!")
 except ImportError as e:
-    print(f"❌ Error: {e}\nRe-run Cell 1")
+    print(f"❌ Error: {e}")
 ```
 
-### Cell 3: Analyze a Stock
+### Cell 3: Analyze Stock
 ```python
 from src.agents.research_manager import ResearchManager
 from src.models.stock_data import AnalysisConfig
 
 try:
-    print("📊 Analyzing AAPL...")
     manager = ResearchManager(use_cache=False)
-    config = AnalysisConfig(ticker="AAPL", num_peers=3)
-    result = manager.analyze("AAPL", config)
+    result = manager.analyze("AAPL", AnalysisConfig(ticker="AAPL", num_peers=3))
     print(manager.generate_report(result))
-    print("✅ Done!")
 except Exception as e:
     print(f"❌ Error: {e}")
 ```
