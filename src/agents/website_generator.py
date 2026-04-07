@@ -68,32 +68,60 @@ class HTMLWebsiteGenerator:
         peer_analysis = result.peer_analysis
         macro_analysis = result.macro_analysis
 
-        stock_name = stock_info.name if stock_info else ticker
-        sector = stock_info.sector if stock_info else "N/A"
+        if isinstance(stock_info, dict):
+            stock_name = stock_info.get("name", ticker)
+            sector = stock_info.get("sector", "N/A")
+        else:
+            stock_name = stock_info.name if stock_info else ticker
+            sector = stock_info.sector if stock_info else "N/A"
+
+        if isinstance(metrics, dict):
+            market_cap_val = f"${metrics.get('market_cap', 0):,.0f}" if metrics.get('market_cap') else 'N/A'
+            pe_val = f"{metrics.get('pe_ratio', 0):.2f}" if metrics.get('pe_ratio') else 'N/A'
+            roe_val = f"{metrics.get('roe', 0):.2f}%" if metrics.get('roe') else 'N/A'
+            de_val = f"{metrics.get('debt_to_equity', 0):.2f}" if metrics.get('debt_to_equity') else 'N/A'
+            cr_val = f"{metrics.get('current_ratio', 0):.2f}" if metrics.get('current_ratio') else 'N/A'
+            pm_val = f"{metrics.get('profit_margin', 0):.2f}%" if metrics.get('profit_margin') else 'N/A'
+            target_pe = metrics.get('pe_ratio', 0)
+        else:
+            market_cap_val = f"${metrics.market_cap:,.0f}" if metrics and metrics.market_cap else 'N/A'
+            pe_val = f"{metrics.pe_ratio:.2f}" if metrics and metrics.pe_ratio else 'N/A'
+            roe_val = f"{metrics.roe:.2f}%" if metrics and metrics.roe else 'N/A'
+            de_val = f"{metrics.debt_to_equity:.2f}" if metrics and metrics.debt_to_equity else 'N/A'
+            cr_val = f"{metrics.current_ratio:.2f}" if metrics and metrics.current_ratio else 'N/A'
+            pm_val = f"{metrics.profit_margin:.2f}%" if metrics and metrics.profit_margin else 'N/A'
+            target_pe = metrics.pe_ratio if metrics else 0
 
         # Prepare peer data for chart
-        peer_names = [p.ticker for p in peer_analysis.peers] if peer_analysis and peer_analysis.peers else []
-        peer_pe = [p.pe_ratio for p in peer_analysis.peers if p.pe_ratio] if peer_analysis and peer_analysis.peers else []
-        target_pe = metrics.pe_ratio if metrics else 0
+        peer_names = []
+        peer_pe = []
+        if peer_analysis and peer_analysis.peers:
+            for p in peer_analysis.peers:
+                peer_names.append(p.ticker)
+                if isinstance(p.metrics, dict):
+                    peer_pe.append(p.metrics.get('pe_ratio', 0))
+                else:
+                    peer_pe.append(p.metrics.pe_ratio or 0)
 
         # Prepare macro data
         macro_sectors = []
         macro_impacts = []
-        macro_sentiments = []
-        if macro_analysis:
-            for impact in macro_analysis.sector_impacts:
-                macro_sectors.append(impact.sector)
-                macro_impacts.append(impact.impact_score)
-                macro_sentiments.append(impact.sentiment)
+        if macro_analysis and hasattr(macro_analysis, 'impacts'):
+            for impact in macro_analysis.impacts:
+                if isinstance(impact, dict):
+                    macro_sectors.append(impact.get('event_type', 'Unknown'))
+                    macro_impacts.append(impact.get('impact_score', 0))
+                else:
+                    macro_sectors.append(impact.event_type)
+                    macro_impacts.append(impact.impact_score)
 
-        market_cap_val = f"${metrics.market_cap:,.0f}" if metrics and metrics.market_cap else 'N/A'
-        pe_val = f"{metrics.pe_ratio:.2f}" if metrics and metrics.pe_ratio else 'N/A'
-        week_high = f"${stock_info.fifty_two_week_high}" if stock_info else 'N/A'
-        week_low = f"${stock_info.fifty_two_week_low}" if stock_info else 'N/A'
-        roe_val = f"{metrics.roe:.2f}%" if metrics and metrics.roe else 'N/A'
-        de_val = f"{metrics.debt_to_equity:.2f}" if metrics and metrics.debt_to_equity else 'N/A'
-        cr_val = f"{metrics.current_ratio:.2f}" if metrics and metrics.current_ratio else 'N/A'
-        pm_val = f"{metrics.profit_margin:.2f}%" if metrics and metrics.profit_margin else 'N/A'
+        # Week high/low
+        if isinstance(stock_info, dict):
+            week_high = f"${stock_info.get('fifty_two_week_high', 'N/A')}"
+            week_low = f"${stock_info.get('fifty_two_week_low', 'N/A')}"
+        else:
+            week_high = f"${stock_info.fifty_two_week_high}" if stock_info and hasattr(stock_info, 'fifty_two_week_high') else 'N/A'
+            week_low = f"${stock_info.fifty_two_week_low}" if stock_info and hasattr(stock_info, 'fifty_two_week_low') else 'N/A'
 
         html = """
 <!DOCTYPE html>

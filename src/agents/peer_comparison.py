@@ -73,6 +73,13 @@ class PeerComparisonAgent:
             logger.warning(f"No target metrics for {target_ticker}")
             return None
 
+        if isinstance(target_metrics, dict):
+            try:
+                target_metrics = StockMetrics(**target_metrics)
+            except Exception as e:
+                logger.warning(f"Could not convert target_metrics dict to StockMetrics: {e}")
+                return None
+
         # Use provided peers or identify new ones
         if not peer_tickers:
             logger.info(f"No peer tickers provided, identifying peers for {target_ticker}")

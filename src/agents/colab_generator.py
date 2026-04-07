@@ -102,11 +102,22 @@ print("✅ Libraries installed successfully")
 
         # Stock Info
         if result.stock_info:
+            if isinstance(result.stock_info, dict):
+                name = result.stock_info.get('name', 'Unknown')
+                sector = result.stock_info.get('sector', 'N/A')
+                industry = result.stock_info.get('industry', 'N/A')
+                website = result.stock_info.get('website', 'N/A')
+            else:
+                name = result.stock_info.name
+                sector = result.stock_info.sector
+                industry = result.stock_info.industry
+                website = result.stock_info.website
+
             info_text = f"""
-## {result.stock_info.name}
-- **Sector:** {result.stock_info.sector}
-- **Industry:** {result.stock_info.industry}
-- **Website:** {result.stock_info.website}
+## {name}
+- **Sector:** {sector}
+- **Industry:** {industry}
+- **Website:** {website}
 """
             cells.append(self._create_markdown_cell(info_text))
 

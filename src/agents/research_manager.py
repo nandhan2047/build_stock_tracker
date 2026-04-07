@@ -16,7 +16,7 @@ import time
 
 from src.utils.logger import setup_logger
 from src.utils.data_cleaning import normalize_ticker, validate_ticker
-from src.models.stock_data import AnalysisResult, AnalysisConfig
+from src.models.stock_data import AnalysisResult, AnalysisConfig, StockInfo, StockMetrics
 from src.scrapers.yahoo_scraper import YahooFinanceScraper
 from src.scrapers.dataroma_scraper import DataromaScraper
 from src.agents.peer_comparison import PeerComparisonAgent
@@ -79,10 +79,19 @@ class ResearchManager:
             cached_result = self.cache_manager.get(f"analysis_{ticker}")
             if cached_result:
                 logger.info(f"✅ Cache hit for {ticker}")
-                cached_result.cache_hit = True
-                cached_result.execution_time_seconds = time.time() - start_time
-                return cached_result
-            logger.info(f"📥 Cache miss for {ticker}")
+                try:
+                    if cached_result and isinstance(cached_result, dict):
+                        result.stock_info = StockInfo(**cached_result.get("stock_info")) if cached_result.get("stock_info") else None
+                        result.stock_metrics = StockMetrics(**cached_result.get("stock_metrics")) if cached_result.get("stock_metrics") else None
+                        result.peer_analysis = cached_result.get("peer_analysis")
+                        result.macro_analysis = cached_result.get("macro_analysis")
+                        result.cache_hit = True
+                        result.execution_time_seconds = time.time() - start_time
+                        return result
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to deserialize cache: {e}, refetching")
+            else:
+                logger.info(f"📥 Cache miss for {ticker}")
 
         # Initialize result
         result = AnalysisResult(target_ticker=ticker)
@@ -92,8 +101,14 @@ class ResearchManager:
         try:
             yahoo_data = self.yahoo_scraper.scrape(ticker)
             if yahoo_data:
-                result.stock_info = yahoo_data.get("info")
-                result.stock_metrics = yahoo_data.get("metrics")
+                stock_info_dict = yahoo_data.get("info")
+                stock_metrics_dict = yahoo_data.get("metrics")
+
+                if stock_info_dict:
+                    result.stock_info = StockInfo(**stock_info_dict) if isinstance(stock_info_dict, dict) else stock_info_dict
+                if stock_metrics_dict:
+                    result.stock_metrics = StockMetrics(**stock_metrics_dict) if isinstance(stock_metrics_dict, dict) else stock_metrics_dict
+
                 logger.info(f"✓ Stock info retrieved for {ticker}")
             else:
                 logger.warning(f"⚠️ No stock info found for {ticker}")
@@ -180,25 +195,48 @@ class ResearchManager:
         Returns:
             Formatted report string
         """
+        # Handle both dict and Pydantic model formats
+        if isinstance(result.stock_info, dict):
+            stock_name = result.stock_info.get("name", "N/A")
+            stock_sector = result.stock_info.get("sector", "N/A")
+            stock_industry = result.stock_info.get("industry", "N/A")
+        else:
+            stock_name = result.stock_info.name if result.stock_info else 'N/A'
+            stock_sector = result.stock_info.sector if result.stock_info else 'N/A'
+            stock_industry = result.stock_info.industry if result.stock_info else 'N/A'
+
+        if isinstance(result.stock_metrics, dict):
+            current_price = result.stock_metrics.get("price", "N/A")
+            market_cap = result.stock_metrics.get("market_cap", "N/A")
+            pe_ratio = result.stock_metrics.get("pe_ratio", "N/A")
+            forward_pe = result.stock_metrics.get("forward_pe", "N/A")
+            peg_ratio = result.stock_metrics.get("peg_ratio", "N/A")
+        else:
+            current_price = result.stock_metrics.price if result.stock_metrics else 'N/A'
+            market_cap = result.stock_metrics.market_cap if result.stock_metrics else 'N/A'
+            pe_ratio = result.stock_metrics.pe_ratio if result.stock_metrics else 'N/A'
+            forward_pe = result.stock_metrics.forward_pe if result.stock_metrics else 'N/A'
+            peg_ratio = result.stock_metrics.peg_ratio if result.stock_metrics else 'N/A'
+
         report = f"""
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                    EXECUTIVE RESEARCH DOSSIER                                ║
-║                         Ticker: {result.target_ticker}                              
+║                         Ticker: {result.target_ticker}
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 📌 COMPANY PROFILE
 {'─' * 80}
-Name:           {result.stock_info.name if result.stock_info else 'N/A'}
-Sector:         {result.stock_info.sector if result.stock_info else 'N/A'}
-Industry:       {result.stock_info.industry if result.stock_info else 'N/A'}
+Name:           {stock_name}
+Sector:         {stock_sector}
+Industry:       {stock_industry}
 
 💰 KEY METRICS
 {'─' * 80}
-Current Price:  ${result.stock_metrics.price if result.stock_metrics else 'N/A'}
-Market Cap:     {f"${result.stock_metrics.market_cap:,.0f}" if result.stock_metrics and result.stock_metrics.market_cap else 'N/A'}
-P/E Ratio:      {result.stock_metrics.pe_ratio if result.stock_metrics else 'N/A'}
-Forward P/E:    {result.stock_metrics.forward_pe if result.stock_metrics else 'N/A'}
-PEG Ratio:      {result.stock_metrics.peg_ratio if result.stock_metrics else 'N/A'}
+Current Price:  ${current_price}
+Market Cap:     {f"${market_cap:,.0f}" if isinstance(market_cap, (int, float)) else market_cap}
+P/E Ratio:      {pe_ratio}
+Forward P/E:    {forward_pe}
+PEG Ratio:      {peg_ratio}
 
 📊 PEER COMPARISON
 {'─' * 80}
@@ -208,7 +246,7 @@ PEG Ratio:      {result.stock_metrics.peg_ratio if result.stock_metrics else 'N/
             report += f"""
 Valuation:      {result.peer_analysis.valuation_verdict or 'N/A'}
 Avg P/E (Peers): {result.peer_analysis.avg_pe_ratio or 'N/A'}
-Your P/E:       {result.stock_metrics.pe_ratio if result.stock_metrics else 'N/A'}
+Your P/E:       {pe_ratio}
 Number of Peers: {len(result.peer_analysis.peers) if result.peer_analysis.peers else 0}
 """
         else:
