@@ -18,43 +18,37 @@ This happens because:
 
 ---
 
-## 🎯 SOLUTION 1: Create `app.py` in Root (EASIEST)
+## ✅ The Fix (1 Simple Step)
 
-### Step 1: Create `app.py` file
-Create a new file called **`app.py`** in the **ROOT** of your repository with this content:
+Create **`app.py`** in your repository root:
 
 ```python
-"""
-Streamlit app launcher for Build Stock Tracker
-This file is in the root directory for Streamlit Cloud compatibility
-"""
-
+"""Streamlit entry point - compatible with Streamlit Cloud"""
 import sys
 from pathlib import Path
 
-# Add src to path
-project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root))
+# Setup paths
+sys.path.insert(0, str(Path(__file__).parent))
 
-# Import and run the original main
-from main import *
+# Run main app
+if __name__ == "__main__":
+    from main import *
 ```
 
-### Step 2: Push to GitHub
+Push to GitHub:
 ```bash
 git add app.py
-git commit -m "Add app.py for Streamlit Cloud"
+git commit -m "Add Streamlit Cloud entry point"
 git push origin main
 ```
 
-### Step 3: Deploy in Streamlit Cloud
-1. Go to https://streamlit.io/cloud
-2. Click "Create app"
-3. Select repo: `build_stock_tracker`
-4. **Main file path:** `app.py`
-5. Click "Deploy"
+In Streamlit Cloud Dashboard:
+1. Click "New app"
+2. Select repo: `build_stock_tracker`
+3. Main file: **`app.py`**
+4. Click "Deploy"
 
-✅ **Done!** Should work now!
+✅ **Done in 5 minutes!**
 
 ---
 

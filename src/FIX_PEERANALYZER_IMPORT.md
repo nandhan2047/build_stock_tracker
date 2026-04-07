@@ -135,35 +135,63 @@ Analyzes peer comparisons:
 
 ## 🚀 COMPLETE COLAB FIX GUIDE
 
-### Cell 1: Download Project
+### Cell 1: Setup (All-in-One)
 ```python
-!git clone https://github.com/YOUR_USERNAME/build_stock_tracker.git /content/build_stock_tracker
+import subprocess, sys, os
+from pathlib import Path
 
-%cd /content/build_stock_tracker
-!pip install -q -r requirements.txt
+project_path = '/content/build_stock_tracker'
+
+# Clone only if needed
+if not os.path.exists(project_path):
+    subprocess.run(["git", "clone",
+                    "https://github.com/YOUR_USERNAME/build_stock_tracker.git",
+                    project_path], capture_output=True)
+
+# Install dependencies
+subprocess.run(["pip", "install", "-q", "yfinance", "pandas", "requests",
+                "beautifulsoup4", "pydantic", "plotly"], capture_output=True)
+
+# Setup path
+sys.path.insert(0, project_path)
+
+print("✅ Environment ready!")
 ```
 
-### Cell 2: Test Imports
+### Cell 2: Verify & Test
 ```python
 import sys
 sys.path.insert(0, '/content/build_stock_tracker')
 
-# Test import
-from src.utils.calculations import PeerAnalyzer, FinancialCalculator
-from src.agents.peer_comparison import PeerComparisonAgent
-from src.agents.research_manager import ResearchManager
+try:
+    from src.utils.calculations import PeerAnalyzer, FinancialCalculator
+    from src.agents.research_manager import ResearchManager
 
-print("✅ All imports successful!")
+    # Quick test
+    analyzer = PeerAnalyzer()
+    avg = analyzer.calculate_average_metric([10, 20, 30])
+    assert avg == 20.0, f"Expected 20.0, got {avg}"
+
+    print("✅ All imports working! Ready to analyze stocks.")
+except ImportError as e:
+    print(f"❌ Import error: {e}")
+    print("   Run Cell 1 again to fix")
+except Exception as e:
+    print(f"❌ Error: {e}")
 ```
 
-### Cell 3: Run Analysis
+### Cell 3: Analyze Stock
 ```python
 from src.models.stock_data import AnalysisConfig
+from src.agents.research_manager import ResearchManager
 
-manager = ResearchManager(use_cache=False)
-result = manager.analyze('AAPL', AnalysisConfig(ticker='AAPL'))
-
-print(manager.generate_report(result))
+try:
+    manager = ResearchManager(use_cache=False)  # No cache in Colab
+    result = manager.analyze('AAPL', AnalysisConfig(ticker='AAPL', num_peers=3))
+    print(manager.generate_report(result))
+    print("✅ Analysis complete!")
+except Exception as e:
+    print(f"❌ Analysis failed: {e}")
 ```
 
 ---

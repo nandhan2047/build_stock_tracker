@@ -25,35 +25,63 @@ The app will automatically open at `http://localhost:8501`
 
 ---
 
-## Command Line Usage
+## Google Colab Quick Start (Recommended for Testing)
 
-### Run Analysis for a Single Stock
+### 🚀 One-Cell Colab Setup
 ```python
-python -c "
+# Cell 1: Clone & Setup (Copy-paste this entire cell)
+import subprocess
+import sys
+
+# Clone repo (skip if already cloned)
+try:
+    import build_stock_tracker
+except ImportError:
+    print("📦 Installing project...")
+    subprocess.run(["git", "clone", "https://github.com/YOUR_USERNAME/build_stock_tracker.git",
+                    "/content/build_stock_tracker"], check=False)
+
+# Install dependencies
+subprocess.run(["pip", "install", "-q", "yfinance", "pandas", "requests", "beautifulsoup4",
+                "pydantic", "plotly"], capture_output=True)
+
+# Add to path
+sys.path.insert(0, '/content/build_stock_tracker')
+
+print("✅ Setup complete!")
+```
+
+### 📊 Run Analysis in Colab
+```python
+# Cell 2: Analyze a stock
 from src.agents.research_manager import ResearchManager
 from src.models.stock_data import AnalysisConfig
 
+try:
+    manager = ResearchManager(use_cache=False)  # Disable cache in Colab
+    result = manager.analyze('AAPL', AnalysisConfig(ticker='AAPL', num_peers=3))
+    print(manager.generate_report(result))
+    print("✅ Analysis complete!")
+except Exception as e:
+    print(f"❌ Error: {e}")
+```
+
+### 🔧 Local Command Line Usage
+
+```bash
+# Run analysis script
+python fetch_data_for_given_stock.py
+
+# Or use Python directly
+python -c "
+import sys
+sys.path.insert(0, '.')
+from src.agents.research_manager import ResearchManager
+from src.models.stock_data import AnalysisConfig
 manager = ResearchManager()
-result = manager.analyze('AAPL', AnalysisConfig(ticker='AAPL'))
+result = manager.analyze('TSLA', AnalysisConfig(ticker='TSLA'))
 print(manager.generate_report(result))
 "
-```
-
-### Test Scrapers
-```python
-# Test Yahoo Finance Scraper
-python src/scrapers/yahoo_scraper.py
-
-# Test Dataroma Scraper
-python src/scrapers/dataroma_scraper.py
-
-# Test Macro Analyst
-python src/agents/macro_analyst.py
-```
-
-### Test Cache
-```python
-python src/database/cache.py
 ```
 
 ---

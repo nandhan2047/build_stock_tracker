@@ -9,7 +9,11 @@ from abc import ABC, abstractmethod
 from typing import Optional, Dict, Any
 from datetime import datetime
 import sys
-sys.path.insert(0, '/home/claude/build_stock_tracker')
+from pathlib import Path
+
+# Add project root to path (works in Colab & local)
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
 
 from config import REQUEST_TIMEOUT, REQUEST_DELAY_SECONDS, REQUEST_RETRY_COUNT, USER_AGENT
 from src.utils.logger import setup_logger

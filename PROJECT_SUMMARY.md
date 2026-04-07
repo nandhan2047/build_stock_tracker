@@ -194,9 +194,12 @@ src/
 
 ---
 
-## 🚀 How to Run
+## 🚀 How to Run (Choose One)
 
-### 1. Quick Start (5 minutes)
+### 🌐 Google Colab (Recommended for Testing)
+See **[COLAB_SETUP.md](COLAB_SETUP.md)** - Just copy-paste 3 cells!
+
+### 💻 Local Installation
 ```bash
 cd build_stock_tracker
 pip install -r requirements.txt

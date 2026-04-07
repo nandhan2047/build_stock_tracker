@@ -28,31 +28,24 @@ A **multi-agent financial research system** that provides 360-degree analysis of
 
 ## 🚀 Quick Start
 
-### 1. Clone & Setup
-```bash
-git clone https://github.com/yourusername/build_stock_tracker.git
-cd build_stock_tracker
+### Option A: Google Colab (Fastest - No Setup!)
+```python
+# Cell 1: Install & Clone
+import subprocess, sys
+subprocess.run(["pip", "install", "-q", "yfinance", "pandas", "requests", "beautifulsoup4", "pydantic", "plotly"], capture_output=True)
+subprocess.run(["git", "clone", "https://github.com/YOUR_USERNAME/build_stock_tracker.git", "/content/build_stock_tracker"], capture_output=False)
+sys.path.insert(0, '/content/build_stock_tracker')
+print("✅ Setup complete!")
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
+# Cell 2: Analyze
+from src.agents.research_manager import ResearchManager
+from src.models.stock_data import AnalysisConfig
+manager = ResearchManager(use_cache=False)
+result = manager.analyze('AAPL', AnalysisConfig(ticker='AAPL'))
+print(manager.generate_report(result))
 ```
 
-### 2. Run the Streamlit App
-```bash
-streamlit run main.py
-```
-
-The app will open at `http://localhost:8501`
-
-### 3. Enter a Stock Ticker
-- Type any stock ticker (e.g., AAPL, TSLA, MSFT)
-- Select analysis options
-- Click "Analyze Stock"
-- Explore results with interactive charts
+### Option B: Local Setup
 
 ## 📊 Analysis Output
 

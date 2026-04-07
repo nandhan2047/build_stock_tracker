@@ -4,7 +4,11 @@ Generates Jupyter notebooks with all analysis and visualizations.
 """
 
 import sys
-sys.path.insert(0, '/home/claude/build_stock_tracker')
+from pathlib import Path
+
+# Add project root to path (works in Colab & local)
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
 
 import json
 from pathlib import Path
