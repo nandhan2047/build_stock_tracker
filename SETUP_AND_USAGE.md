@@ -44,7 +44,7 @@ sys.path.insert(0, extract_dir)
 print("✅ Setup complete!")
 ```
 
-**Cell 2: Analyze**
+**Cell 2: Analyze Stock**
 ```python
 import sys
 sys.path.insert(0, "/content/build_stock_tracker")
@@ -56,19 +56,20 @@ from src.utils.colab_utils import display_website_link
 manager = ResearchManager(use_cache=False)
 result = manager.analyze("AAPL", AnalysisConfig(ticker="AAPL", num_peers=3))
 
-if result:
-    print(manager.generate_report(result))
-    if result.website_path:
-        display_website_link(result.website_path)
+print(manager.generate_report(result))
+
+if result.website_path:
+    display_website_link(result.website_path)
 ```
 
-**Cell 3: View Website**
+**Cell 3: View Website in Colab**
 ```python
 from src.utils.colab_utils import open_website_in_colab
 from IPython.display import HTML
 
-html_content = open_website_in_colab(result.website_path)
-display(HTML(html_content))
+if result.website_path:
+    html = open_website_in_colab(result.website_path)
+    display(HTML(html))
 ```
 
 ### Option 2: Local (Windows/Mac/Linux)
@@ -219,12 +220,15 @@ result = manager.analyze("MSFT", config)
 print(manager.generate_report(result))  # ASCII report
 ```
 
-### Example 3: Colab with Display
+### Example 3: Display Website in Colab
 ```python
 from IPython.display import HTML
 from src.utils.colab_utils import open_website_in_colab
 
+# Read HTML file
 html = open_website_in_colab(result.website_path)
+
+# Display in Colab cell
 display(HTML(html))
 ```
 
@@ -328,6 +332,8 @@ plotly             - Interactive charts
 ✓ **Colab utils** - NEW colab_utils.py for public URLs + display
 ✓ **Website format string** - Fixed template syntax in website_generator.py (Apr 7)
 ✓ **JavaScript escaping** - Fixed Plotly chart generation in HTML output (Apr 7)
+✓ **Return statement** - Added missing return in _create_html() (Apr 7)
+✓ **Ngrok removed** - Simplified to display HTML directly in Colab (Apr 7)
 
 ---
 
@@ -351,7 +357,8 @@ plotly             - Interactive charts
 
 ### Colab website not displaying
 - Use Cell 3 with `open_website_in_colab()` and `display(HTML(...))`
-- Or open HTML file locally with double-click
+- Or download the HTML file to view locally in browser
+- No ngrok auth token needed!
 
 ---
 
