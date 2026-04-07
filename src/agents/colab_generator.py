@@ -123,31 +123,31 @@ print("✅ Libraries installed successfully")
 
         # Fetch current data
         cells.append(self._create_markdown_cell("## Current Stock Metrics"))
-        cells.append(self._create_code_cell(f"""
-ticker = "{result.target_ticker}"
+        cells.append(self._create_code_cell("""
+ticker = "{ticker}"
 data = yf.Ticker(ticker)
 info = data.info
 
 # Display key metrics
 metrics = {{
-    'Current Price': f"${info.get('currentPrice', 'N/A'):,.2f}",
-    'Market Cap': f"${info.get('marketCap', 'N/A'):,.0f}",
+    'Current Price': f"${{info.get('currentPrice', 'N/A'):,.2f}}",
+    'Market Cap': f"${{info.get('marketCap', 'N/A'):,.0f}}",
     'P/E Ratio': info.get('trailingPE', 'N/A'),
     'Forward P/E': info.get('forwardPE', 'N/A'),
     'Dividend Yield': f"{{info.get('dividendYield', 0)*100:.2f}}%",
-    '52 Week High': f"${info.get('fiftyTwoWeekHigh', 'N/A'):,.2f}",
-    '52 Week Low': f"${info.get('fiftyTwoWeekLow', 'N/A'):,.2f}",
+    '52 Week High': f"${{info.get('fiftyTwoWeekHigh', 'N/A'):,.2f}}",
+    '52 Week Low': f"${{info.get('fiftyTwoWeekLow', 'N/A'):,.2f}}",
 }}
 
 for key, value in metrics.items():
     print(f"{{key}}: {{value}}")
-"""))
+""".format(ticker=result.target_ticker)))
 
         # Historical chart
         cells.append(self._create_markdown_cell("## 1-Year Price Chart"))
-        cells.append(self._create_code_cell(f"""
+        cells.append(self._create_code_cell("""
 # Fetch historical data
-hist = yf.download("{result.target_ticker}", period="1y", progress=False)
+hist = yf.download("{ticker}", period="1y", progress=False)
 
 # Create interactive chart
 fig = go.Figure()
@@ -160,16 +160,16 @@ fig.update_layout(
     template='plotly_white'
 )
 fig.show()
-"""))
+""".format(ticker=result.target_ticker)))
 
         # Peer comparison (if available)
         if result.peer_analysis and result.peer_analysis.peers:
             cells.append(self._create_markdown_cell("## Peer Comparison"))
 
             peer_tickers = [f'"{p.ticker}"' for p in result.peer_analysis.peers[:4]]
-            cells.append(self._create_code_cell(f"""
+            cells.append(self._create_code_cell("""
 # Fetch peer data
-peers = [{', '.join(peer_tickers)}]
+peers = [{peers_list}]
 peer_data = {{}}
 
 for peer in peers:
@@ -195,7 +195,7 @@ if 'Forward P/E' in df_peers.columns:
     )])
     fig.update_layout(title='Forward P/E Ratio - Peer Comparison', yaxis_title='Forward P/E')
     fig.show()
-"""))
+""".format(peers_list=', '.join(peer_tickers))))
 
         # Macro section
         if result.macro_analysis:

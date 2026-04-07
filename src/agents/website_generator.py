@@ -123,6 +123,9 @@ class HTMLWebsiteGenerator:
             week_high = f"${stock_info.fifty_two_week_high}" if stock_info and hasattr(stock_info, 'fifty_two_week_high') else 'N/A'
             week_low = f"${stock_info.fifty_two_week_low}" if stock_info and hasattr(stock_info, 'fifty_two_week_low') else 'N/A'
 
+        analysis_date = datetime.now().strftime('%Y-%m-%d')
+        analysis_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
         html = """
 <!DOCTYPE html>
 <html lang="en">
@@ -170,7 +173,7 @@ class HTMLWebsiteGenerator:
                 </div>
                 <div class="info-card">
                     <label>Analysis Date</label>
-                    <div class="value">{datetime.now().strftime('%Y-%m-%d')}</div>
+                    <div class="value">{analysis_date}</div>
                 </div>
                 <div class="info-card">
                     <label>Cache Hit</label>
@@ -259,7 +262,7 @@ class HTMLWebsiteGenerator:
         </div>
 
         <footer>
-            <p>Stock Analysis Dashboard • Generated {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p>Stock Analysis Dashboard • Generated {analysis_datetime}</p>
         </footer>
     </div>
 
@@ -292,4 +295,5 @@ class HTMLWebsiteGenerator:
            pe_val=pe_val, week_high=week_high, week_low=week_low, roe_val=roe_val, de_val=de_val,
            cr_val=cr_val, pm_val=pm_val, target_pe=target_pe,
            peer_names=json.dumps(peer_names), peer_pe=json.dumps(peer_pe),
-           macro_sectors=json.dumps(macro_sectors), macro_impacts=json.dumps(macro_impacts))
+           macro_sectors=json.dumps(macro_sectors), macro_impacts=json.dumps(macro_impacts),
+           analysis_date=analysis_date, analysis_datetime=analysis_datetime)
