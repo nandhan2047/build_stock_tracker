@@ -22,6 +22,7 @@ from src.scrapers.dataroma_scraper import DataromaScraper
 from src.agents.peer_comparison import PeerComparisonAgent
 from src.agents.macro_analyst import MacroAnalyst
 from src.agents.colab_generator import ColabGenerator
+from src.agents.website_generator import HTMLWebsiteGenerator
 from src.database.cache import CacheManager
 
 logger = setup_logger(__name__)
@@ -145,6 +146,16 @@ class ResearchManager:
                 logger.info(f"✓ Colab script generated: {script_path}")
             except Exception as e:
                 logger.warning(f"⚠️ Colab generation failed: {e}")
+
+        # Step 5: Generate Website
+        logger.info(f"🌐 Generating website for {ticker}")
+        try:
+            website_gen = HTMLWebsiteGenerator()
+            website_path = website_gen.generate(analysis_result=result)
+            result.website_path = website_path
+            logger.info(f"✓ Website generated: {website_path}")
+        except Exception as e:
+            logger.warning(f"⚠️ Website generation failed: {e}")
 
         # Finalize
         result.analysis_date = datetime.now()

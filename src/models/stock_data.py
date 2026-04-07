@@ -134,6 +134,7 @@ class AnalysisResult(BaseModel):
     macro_analysis: Optional[MacroAnalysisResult] = None
     investment_thesis: Optional[InvestmentThesis] = None
     colab_script_path: Optional[str] = None
+    website_path: Optional[str] = None
     cache_hit: bool = Field(default=False, description="Whether this was loaded from cache")
     execution_time_seconds: Optional[float] = None
 
