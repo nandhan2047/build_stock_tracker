@@ -1,7 +1,7 @@
 # Graph Report - C:\Users\raghunandhan.palla\OneDrive - Accenture\Desktop\My_folder\project stock tracker\build_stock_tracker  (2026-04-19)
 
 ## Corpus Check
-- 28 files · ~19,385 words
+- 28 files · ~49,299 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary

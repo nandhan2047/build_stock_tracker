@@ -141,6 +141,12 @@ logs/
 .cache/
 *.cache
 
+# Generated knowledge graph
+graphify-out/
+
+# Generated HTML websites
+websites/
+
 # Temporary files
 tmp/
 temp/

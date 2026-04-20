@@ -1,78 +1,24 @@
 # Stock Tracker - Complete Setup & Usage Guide
 
-## 🎯 What This Does
+## What This Does
 
-Multi-agent financial research system that analyzes stocks and generates an **interactive HTML website** you can open in Google Colab or locally.
+Multi-agent financial research system that analyzes stocks and generates an **interactive HTML website** you can view locally on your browser.
 
 **Main Features:**
-- ✅ Fetch stock data & identify peers
-- ✅ Compare valuation vs peers
-- ✅ Analyze macro economic impacts
-- ✅ Generate **interactive HTML dashboard** (NEW!)
-- ✅ Works in Google Colab + locally
-- ✅ 7-day caching for speed
+- Fetch stock data & identify peers
+- Compare valuation vs peers
+- Analyze macro economic impacts
+- Generate **interactive HTML dashboard with 7 tabs**
+- Works locally on Windows/Mac/Linux
+- 7-day caching for speed
 
 ---
 
-## 🚀 Quick Start (Choose One)
+## Quick Start (Choose One)
 
-### Option 1: Google Colab (Recommended)
+### Option 1: Local (Recommended)
 
-Copy-paste these 3 cells into a Colab notebook:
-
-**Cell 1: Setup**
-```python
-import os, zipfile, subprocess, sys, shutil
-
-subprocess.run(["curl", "-L", "-o", "/tmp/repo.zip",
-                "https://github.com/YOUR_USERNAME/build_stock_tracker/archive/refs/heads/main.zip"],
-               capture_output=True)
-
-extract_dir = '/content/build_stock_tracker'
-os.makedirs(extract_dir, exist_ok=True)
-with zipfile.ZipFile('/tmp/repo.zip', 'r') as z:
-    z.extractall(extract_dir)
-
-extracted = os.path.join(extract_dir, [f for f in os.listdir(extract_dir) if 'build_stock_tracker' in f][0])
-for item in os.listdir(extracted):
-    shutil.move(os.path.join(extracted, item), os.path.join(extract_dir, item))
-shutil.rmtree(extracted)
-
-subprocess.run(["pip", "install", "-q", "yfinance", "pandas", "requests", "beautifulsoup4", "pydantic", "plotly"],
-               capture_output=True)
-sys.path.insert(0, extract_dir)
-print("✅ Setup complete!")
-```
-
-**Cell 2: Analyze Stock**
-```python
-import sys
-sys.path.insert(0, "/content/build_stock_tracker")
-
-from src.agents.research_manager import ResearchManager
-from src.models.stock_data import AnalysisConfig
-from src.utils.colab_utils import display_website_link
-
-manager = ResearchManager(use_cache=False)
-result = manager.analyze("AAPL", AnalysisConfig(ticker="AAPL", num_peers=3))
-
-print(manager.generate_report(result))
-
-if result.website_path:
-    display_website_link(result.website_path)
-```
-
-**Cell 3: View Website in Colab**
-```python
-from src.utils.colab_utils import open_website_in_colab
-from IPython.display import HTML
-
-if result.website_path:
-    html = open_website_in_colab(result.website_path)
-    display(HTML(html))
-```
-
-### Option 2: Local (Windows/Mac/Linux)
+**Fastest way to get started:**
 
 ```bash
 # Clone repo
@@ -80,34 +26,42 @@ git clone https://github.com/YOUR_USERNAME/build_stock_tracker.git
 cd build_stock_tracker
 
 # Install dependencies
-pip install yfinance pandas requests beautifulsoup4 pydantic plotly
+pip install -r requirements.txt
 
-# Run analysis
+# Run analysis (Python script)
 python3 -c "
 from src.agents.research_manager import ResearchManager
-from src.models.stock_data import AnalysisConfig
-from src.utils.colab_utils import display_website_link
-
 manager = ResearchManager()
-result = manager.analyze('AAPL', AnalysisConfig(ticker='AAPL', num_peers=3))
+result = manager.analyze('AAPL')
 print(manager.generate_report(result))
-if result.website_path:
-    display_website_link(result.website_path)
-    # Open in browser: open file://[path_from_above]
+print(f'View HTML: {result.website_path}')
+# Open file:// URL in browser
 "
+
+# OR use Streamlit dashboard
+streamlit run main.py
 ```
+
+**What you get:**
+- `analysis_AAPL.html` file in `/websites/` directory
+- Open in any browser
+- Interactive charts, 7 data-rich tabs
+
+### Option 2: Google Colab (Advanced - Requires Upload)
 
 ---
 
-## 📊 Website Features
+## Website Features (7 Interactive Tabs)
 
 The generated HTML dashboard includes:
 
-**4 Interactive Tabs:**
-1. **📊 Overview** - Key metrics (Market Cap, P/E, 52-week high/low)
-2. **📈 Metrics** - Financial ratios (ROE, D/E, Current Ratio, Profit Margin)
-3. **👥 Peer Comparison** - P/E comparison chart vs competitors
-4. **🌍 Macro Analysis** - Economic impact analysis
+1. **Overview** - Key metrics (Market Cap, P/E, 52-week high/low)
+2. **Metrics** - Financial ratios (ROE, D/E, Current Ratio, Profit Margin)
+3. **Peer Comparison** - P/E comparison chart vs competitors
+4. **Macro Analysis** - Economic impact analysis
+5. **Investment Thesis** - AI-generated rating, conviction, strengths/weaknesses, catalysts, risks
+6. **Percentile Rankings** - Where stock ranks vs peers on key metrics (P/E, PEG, Profit Margin, ROE, FCF)
+7. **Financial Health** - Operating Margin, ROA, Quick Ratio, Free Cash Flow, Revenue, Net Income
 
 **All Charts Interactive:**
 - Hover for details
@@ -117,7 +71,7 @@ The generated HTML dashboard includes:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 build_stock_tracker/
@@ -127,9 +81,8 @@ build_stock_tracker/
 │
 ├── src/
 │   ├── agents/
-│   │   ├── research_manager.py      # Main orchestrator (generates site!)
-│   │   ├── website_generator.py     # HTML website generator (NEW!)
-│   │   ├── colab_generator.py       # Jupyter notebook generator
+│   │   ├── research_manager.py      # Main orchestrator
+│   │   ├── website_generator.py     # HTML website generator
 │   │   ├── peer_comparison.py       # Peer analysis
 │   │   └── macro_analyst.py         # Macro economic analysis
 │   │
@@ -146,11 +99,9 @@ build_stock_tracker/
 │   └── utils/
 │       ├── logger.py                # Logging
 │       ├── data_cleaning.py         # Data parsing functions
-│       ├── calculations.py          # Financial ratios
-│       └── colab_utils.py           # Colab helpers (NEW!)
+│       └── calculations.py          # Financial ratios
 │
 ├── websites/                        # Generated HTML files
-├── notebooks/generated_scripts/     # Generated Jupyter notebooks
 └── data/
     ├── stock_tracker.db             # SQLite cache
     └── cache/
@@ -158,50 +109,52 @@ build_stock_tracker/
 
 ---
 
-## 🔑 Core Workflow
+## Core Workflow
 
 ResearchManager orchestrates everything:
 
 ```
 User Input (ticker)
-      ↓
+      |
 Validate ticker
-      ↓
+      |
 Check cache (SQLite)
-      ├ HIT → Return cached + 1-second response
-      └ MISS → Continue
-      ↓
+      |
+      +- HIT   → Return cached result (< 1 second)
+      +- MISS  → Continue
+      |
 Fetch stock info (Yahoo)
-      ↓
+      |
 Identify & fetch peer metrics (Yahoo)
-      ↓
-Peer comparison analysis
-      ↓
-Macro economic analysis
-      ↓
-Generate HTML website (Plotly interactive charts)
-      ↓
-Generate Colab notebook
-      ↓
+      |
+Peer comparison analysis + percentile rankings
+      |
+Macro economic impact analysis
+      |
+Generate investment thesis (AI-generated rating, conviction level, catalysts, risks)
+      |
+Generate HTML website (7 tabs with Plotly interactive charts)
+      |
 Cache result (7-day TTL)
-      ↓
+      |
 Return AnalysisResult
 ```
 
 ---
 
-## 🐍 Usage Examples
+## Usage Examples
 
 ### Example 1: Basic Analysis
 ```python
 from src.agents.research_manager import ResearchManager
-from src.utils.colab_utils import display_website_link
 
 manager = ResearchManager()
 result = manager.analyze("TSLA")
 
 if result and result.website_path:
-    display_website_link(result.website_path)  # Shows file path + URL
+    print(f"HTML dashboard generated: {result.website_path}")
+    print(f"Open in browser: file://{result.website_path}")
+    print(manager.generate_report(result))
 ```
 
 ### Example 2: Custom Configuration
@@ -213,23 +166,19 @@ config = AnalysisConfig(
     num_peers=5,                      # Compare vs 5 competitors
     include_peer_analysis=True,
     include_macro_analysis=True,
-    include_colab_generation=True
 )
 
+manager = ResearchManager()
 result = manager.analyze("MSFT", config)
-print(manager.generate_report(result))  # ASCII report
+print(manager.generate_report(result))
+
+# Open websites/analysis_MSFT.html in browser
 ```
 
-### Example 3: Display Website in Colab
+### Example 3: Zero-API Testing (Local Mode)
 ```python
-from IPython.display import HTML
-from src.utils.colab_utils import open_website_in_colab
-
-# Read HTML file
-html = open_website_in_colab(result.website_path)
-
-# Display in Colab cell
-display(HTML(html))
+# Run local_mode.py - generates sample analysis without API calls
+python local_mode.py
 ```
 
 ---

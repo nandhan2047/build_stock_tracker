@@ -243,6 +243,6 @@ DEMO_MODE = os.getenv("DEMO_MODE", "False").lower() == "true"
 if DEBUG_MODE:
     LOG_LEVEL = "DEBUG"
 
-print(f"✅ Configuration loaded from {__file__}")
-print(f"📁 Base directory: {BASE_DIR}")
-print(f"💾 Database: {DB_PATH}")
+print(f"[OK] Configuration loaded from {__file__}")
+print(f"[OK] Base directory: {BASE_DIR}")
+print(f"[OK] Database: {DB_PATH}")

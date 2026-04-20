@@ -128,6 +128,35 @@ class HTMLWebsiteGenerator:
         cache_hit_str = 'Yes' if result.cache_hit else 'No'
         exec_time = f"{result.execution_time_seconds:.1f}" if result.execution_time_seconds else "0.0"
 
+        # Extract Investment Thesis data
+        thesis = result.investment_thesis
+        thesis_rating = thesis.rating if thesis else "N/A"
+        thesis_conviction = thesis.conviction_level if thesis else "N/A"
+        thesis_confidence = f"{thesis.confidence_score}%" if thesis and thesis.confidence_score else "N/A"
+        thesis_horizon = thesis.time_horizon if thesis else "N/A"
+        thesis_summary = thesis.thesis_summary if thesis else "No thesis available"
+        thesis_strengths = thesis.key_strengths if thesis else []
+        thesis_weaknesses = thesis.key_weaknesses if thesis else []
+        thesis_catalysts = thesis.catalysts if thesis else []
+        thesis_risks = thesis.risks if thesis else []
+
+        # Extract Percentile Rankings data
+        percentiles = {}
+        percentile_labels = []
+        percentile_values = []
+        if peer_analysis and peer_analysis.percentile_ranking:
+            for metric, percentile in peer_analysis.percentile_ranking.items():
+                percentile_labels.append(metric)
+                percentile_values.append(percentile)
+
+        # Extract Financial Health data
+        op_margin = f"{metrics.operating_margin:.2f}%" if metrics and metrics.operating_margin else 'N/A'
+        roa_val = f"{metrics.roa:.2f}%" if metrics and metrics.roa else 'N/A'
+        qr_val = f"{metrics.quick_ratio:.2f}" if metrics and metrics.quick_ratio else 'N/A'
+        fcf_val = f"${metrics.free_cash_flow:,.0f}" if metrics and metrics.free_cash_flow else 'N/A'
+        revenue_val = f"${metrics.revenue:,.0f}" if metrics and metrics.revenue else 'N/A'
+        ni_val = f"${metrics.net_income:,.0f}" if metrics and metrics.net_income else 'N/A'
+
         html = """
 <!DOCTYPE html>
 <html lang="en">
@@ -189,10 +218,13 @@ class HTMLWebsiteGenerator:
         </header>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('overview')">📊 Overview</button>
-            <button class="tab-btn" onclick="showTab('metrics')">📈 Metrics</button>
-            <button class="tab-btn" onclick="showTab('peers')">👥 Peer Comparison</button>
-            <button class="tab-btn" onclick="showTab('macro')">🌍 Macro Analysis</button>
+            <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="showTab('metrics')">Metrics</button>
+            <button class="tab-btn" onclick="showTab('peers')">Peer Comparison</button>
+            <button class="tab-btn" onclick="showTab('macro')">Macro Analysis</button>
+            <button class="tab-btn" onclick="showTab('thesis')">Investment Thesis</button>
+            <button class="tab-btn" onclick="showTab('percentiles')">Percentile Rankings</button>
+            <button class="tab-btn" onclick="showTab('health')">Financial Health</button>
         </div>
 
         <div id="overview" class="tab-content active">
@@ -263,6 +295,83 @@ class HTMLWebsiteGenerator:
             <div id="macro-chart" class="chart-container" style="height: 500px;"></div>
         </div>
 
+        <div id="thesis" class="tab-content">
+            <h2 style="margin-bottom: 20px;">Investment Thesis</h2>
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-label">Rating</div>
+                    <div class="metric-value" id="thesis-rating">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Conviction</div>
+                    <div class="metric-value" id="thesis-conviction">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Confidence Score</div>
+                    <div class="metric-value" id="thesis-confidence">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Time Horizon</div>
+                    <div class="metric-value" id="thesis-horizon">N/A</div>
+                </div>
+            </div>
+            <div class="verdict">
+                <div class="verdict-title">Thesis Summary</div>
+                <div class="verdict-text" id="thesis-summary">No thesis available</div>
+            </div>
+            <div style="margin-top: 20px;">
+                <h3>Key Strengths</h3>
+                <ul id="thesis-strengths" style="margin-left: 20px; margin-top: 10px; color: #cbd5e1;"></ul>
+            </div>
+            <div style="margin-top: 20px;">
+                <h3>Key Weaknesses</h3>
+                <ul id="thesis-weaknesses" style="margin-left: 20px; margin-top: 10px; color: #cbd5e1;"></ul>
+            </div>
+            <div style="margin-top: 20px;">
+                <h3>Catalysts</h3>
+                <ul id="thesis-catalysts" style="margin-left: 20px; margin-top: 10px; color: #cbd5e1;"></ul>
+            </div>
+            <div style="margin-top: 20px;">
+                <h3>Risks</h3>
+                <ul id="thesis-risks" style="margin-left: 20px; margin-top: 10px; color: #cbd5e1;"></ul>
+            </div>
+        </div>
+
+        <div id="percentiles" class="tab-content">
+            <h2 style="margin-bottom: 20px;">Percentile Rankings</h2>
+            <div id="percentiles-chart" class="chart-container" style="height: 600px;"></div>
+        </div>
+
+        <div id="health" class="tab-content">
+            <h2 style="margin-bottom: 20px;">Financial Health</h2>
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-label">Operating Margin</div>
+                    <div class="metric-value" id="health-op-margin">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">ROA</div>
+                    <div class="metric-value" id="health-roa">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Quick Ratio</div>
+                    <div class="metric-value" id="health-quick-ratio">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Free Cash Flow</div>
+                    <div class="metric-value" id="health-fcf">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Revenue</div>
+                    <div class="metric-value" id="health-revenue">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Net Income</div>
+                    <div class="metric-value" id="health-net-income">N/A</div>
+                </div>
+            </div>
+        </div>
+
         <footer>
             <p>Stock Analysis Dashboard • Generated {analysis_datetime}</p>
         </footer>
@@ -291,6 +400,58 @@ class HTMLWebsiteGenerator:
         Plotly.newPlot('peers-chart', [{{'x': {peer_names}, 'y': {peer_pe}, 'type': 'bar', 'marker': {{'color': '#fbbf24'}}, 'name': 'Peers'}}, {{'x': ['{ticker}'], 'y': [{target_pe}], 'type': 'bar', 'marker': {{'color': '#10b981'}}, 'name': 'Target'}}], {{'title': 'P/E Comparison', 'plot_bgcolor': '#0f172a', 'paper_bgcolor': '#1e293b', 'font': {{'color': '#e2e8f0'}}}});
 
         Plotly.newPlot('macro-chart', [{{'x': {macro_sectors}, 'y': {macro_impacts}, 'type': 'bar', 'marker': {{'color': '#38bdf8'}}}}], {{'title': 'Macro Impact', 'plot_bgcolor': '#0f172a', 'paper_bgcolor': '#1e293b', 'font': {{'color': '#e2e8f0'}}}});
+
+        // Investment Thesis data
+        document.getElementById('thesis-rating').textContent = '{thesis_rating}';
+        document.getElementById('thesis-conviction').textContent = '{thesis_conviction}';
+        document.getElementById('thesis-confidence').textContent = '{thesis_confidence}';
+        document.getElementById('thesis-horizon').textContent = '{thesis_horizon}';
+        document.getElementById('thesis-summary').textContent = '{thesis_summary}';
+
+        const thesisStrengths = {thesis_strengths_json};
+        const strengthsList = document.getElementById('thesis-strengths');
+        thesisStrengths.forEach(s => {{
+            const li = document.createElement('li');
+            li.textContent = s;
+            strengthsList.appendChild(li);
+        }});
+
+        const thesisWeaknesses = {thesis_weaknesses_json};
+        const weaknessesList = document.getElementById('thesis-weaknesses');
+        thesisWeaknesses.forEach(w => {{
+            const li = document.createElement('li');
+            li.textContent = w;
+            weaknessesList.appendChild(li);
+        }});
+
+        const thesisCatalysts = {thesis_catalysts_json};
+        const catalystsList = document.getElementById('thesis-catalysts');
+        thesisCatalysts.forEach(c => {{
+            const li = document.createElement('li');
+            li.textContent = c;
+            catalystsList.appendChild(li);
+        }});
+
+        const thesisRisks = {thesis_risks_json};
+        const risksList = document.getElementById('thesis-risks');
+        thesisRisks.forEach(r => {{
+            const li = document.createElement('li');
+            li.textContent = r;
+            risksList.appendChild(li);
+        }});
+
+        // Percentile Rankings chart
+        const percentileLabels = {percentile_labels_json};
+        const percentileValues = {percentile_values_json};
+        Plotly.newPlot('percentiles-chart', [{{'y': percentileLabels, 'x': percentileValues, 'type': 'bar', 'orientation': 'h', 'marker': {{'color': '#8b5cf6'}}}}], {{'title': 'Percentile Rankings vs Peers', 'plot_bgcolor': '#0f172a', 'paper_bgcolor': '#1e293b', 'font': {{'color': '#e2e8f0'}}, 'xaxis': {{'title': 'Percentile (0-100)'}}}});
+
+        // Financial Health data
+        document.getElementById('health-op-margin').textContent = '{op_margin}';
+        document.getElementById('health-roa').textContent = '{roa_val}';
+        document.getElementById('health-quick-ratio').textContent = '{qr_val}';
+        document.getElementById('health-fcf').textContent = '{fcf_val}';
+        document.getElementById('health-revenue').textContent = '{revenue_val}';
+        document.getElementById('health-net-income').textContent = '{ni_val}';
     </script>
 </body>
 </html>
@@ -299,6 +460,12 @@ class HTMLWebsiteGenerator:
            cr_val=cr_val, pm_val=pm_val, target_pe=target_pe or 0,
            peer_names=json.dumps(peer_names), peer_pe=json.dumps(peer_pe),
            macro_sectors=json.dumps(macro_sectors), macro_impacts=json.dumps(macro_impacts),
-           analysis_date=analysis_date, analysis_datetime=analysis_datetime, cache_hit_str=cache_hit_str, exec_time=exec_time)
+           analysis_date=analysis_date, analysis_datetime=analysis_datetime, cache_hit_str=cache_hit_str, exec_time=exec_time,
+           thesis_rating=thesis_rating, thesis_conviction=thesis_conviction, thesis_confidence=thesis_confidence,
+           thesis_horizon=thesis_horizon, thesis_summary=thesis_summary,
+           thesis_strengths_json=json.dumps(thesis_strengths), thesis_weaknesses_json=json.dumps(thesis_weaknesses),
+           thesis_catalysts_json=json.dumps(thesis_catalysts), thesis_risks_json=json.dumps(thesis_risks),
+           percentile_labels_json=json.dumps(percentile_labels), percentile_values_json=json.dumps(percentile_values),
+           op_margin=op_margin, roa_val=roa_val, qr_val=qr_val, fcf_val=fcf_val, revenue_val=revenue_val, ni_val=ni_val)
 
         return html

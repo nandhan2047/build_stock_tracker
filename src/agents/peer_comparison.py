@@ -196,6 +196,7 @@ class PeerComparisonAgent:
         peer_margins = [p.metrics.profit_margin for p in peers_data if p.metrics.profit_margin]
         peer_de = [p.metrics.debt_to_equity for p in peers_data if p.metrics.debt_to_equity]
         peer_roes = [p.metrics.roe for p in peers_data if p.metrics.roe]
+        peer_fcf = [p.metrics.free_cash_flow for p in peers_data if p.metrics.free_cash_flow]
 
         # Calculate averages
         result.avg_forward_pe = self.analyzer.calculate_average_metric(peer_forward_pes)
@@ -237,6 +238,10 @@ class PeerComparisonAgent:
         if target_metrics.roe and peer_roes:
             percentile = self.analyzer.calculate_peer_percentile(target_metrics.roe, peer_roes)
             result.percentile_ranking["ROE"] = percentile
+
+        if target_metrics.free_cash_flow and peer_fcf:
+            percentile = self.analyzer.calculate_peer_percentile(target_metrics.free_cash_flow, peer_fcf)
+            result.percentile_ranking["Free Cash Flow"] = percentile
 
         return result
 

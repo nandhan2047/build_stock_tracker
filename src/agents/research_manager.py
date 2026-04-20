@@ -16,12 +16,11 @@ import time
 
 from src.utils.logger import setup_logger
 from src.utils.data_cleaning import normalize_ticker, validate_ticker
-from src.models.stock_data import AnalysisResult, AnalysisConfig, StockInfo, StockMetrics
+from src.models.stock_data import AnalysisResult, AnalysisConfig, StockInfo, StockMetrics, InvestmentThesis
 from src.scrapers.yahoo_scraper import YahooFinanceScraper
 from src.scrapers.dataroma_scraper import DataromaScraper
 from src.agents.peer_comparison import PeerComparisonAgent
 from src.agents.macro_analyst import MacroAnalyst
-from src.agents.colab_generator import ColabGenerator
 from src.agents.website_generator import HTMLWebsiteGenerator
 from src.database.cache import CacheManager
 
@@ -136,7 +135,7 @@ class ResearchManager:
 
         # Step 3: Macro Analysis
         if config.include_macro_analysis:
-            logger.info(f"🌍 Step 3/4: Analyzing macro impacts for {ticker}")
+            logger.info(f"Step 3/4: Analyzing macro impacts for {ticker}")
             try:
                 macro_agent = MacroAnalyst()
                 macro_analysis = macro_agent.analyze(
@@ -144,26 +143,21 @@ class ResearchManager:
                     sector=result.stock_info.sector if result.stock_info else None,
                 )
                 result.macro_analysis = macro_analysis
-                logger.info(f"✓ Macro analysis completed for {ticker}")
+                logger.info(f"Macro analysis completed for {ticker}")
             except Exception as e:
-                logger.warning(f"⚠️ Macro analysis failed: {e}")
+                logger.warning(f"Macro analysis failed: {e}")
 
-        # Step 4: Generate Colab Script
-        if config.include_colab_generation:
-            logger.info(f"📝 Step 4/4: Generating Colab script for {ticker}")
-            try:
-                colab_gen = ColabGenerator()
-                script_path = colab_gen.generate(
-                    analysis_result=result,
-                    output_dir=None,  # Uses default path from ColabGenerator
-                )
-                result.colab_script_path = script_path
-                logger.info(f"✓ Colab script generated: {script_path}")
-            except Exception as e:
-                logger.warning(f"⚠️ Colab generation failed: {e}")
+        # Step 4: Generate Investment Thesis
+        logger.info(f"Step 4/5: Generating investment thesis for {ticker}")
+        try:
+            thesis = self._generate_investment_thesis(result)
+            result.investment_thesis = thesis
+            logger.info(f"Investment thesis generated for {ticker}")
+        except Exception as e:
+            logger.warning(f"Investment thesis generation failed: {e}")
 
         # Step 5: Generate Website
-        logger.info(f"🌐 Generating website for {ticker}")
+        logger.info(f"Step 5/5: Generating website for {ticker}")
         try:
             website_gen = HTMLWebsiteGenerator()
             website_path = website_gen.generate(analysis_result=result)
@@ -181,9 +175,73 @@ class ResearchManager:
             self.cache_manager.set(f"analysis_{ticker}", result.to_dict())
             logger.info(f"💾 Analysis cached for {ticker}")
 
-        logger.info(f"✅ Analysis complete for {ticker} in {result.execution_time_seconds:.2f}s")
+        logger.info(f"Analysis complete for {ticker} in {result.execution_time_seconds:.2f}s")
 
         return result
+
+    def _generate_investment_thesis(self, result: AnalysisResult) -> InvestmentThesis:
+        """
+        Generate investment thesis from analysis results.
+
+        Args:
+            result: AnalysisResult object with peer and macro analysis
+
+        Returns:
+            InvestmentThesis object
+        """
+        thesis = InvestmentThesis(target_ticker=result.target_ticker)
+
+        # Rating based on valuation verdict
+        if result.peer_analysis and result.peer_analysis.valuation_verdict:
+            verdict = result.peer_analysis.valuation_verdict.lower()
+            if "undervalued" in verdict or "bargain" in verdict:
+                thesis.rating = "Buy"
+            elif "overvalued" in verdict or "premium" in verdict:
+                thesis.rating = "Sell"
+            else:
+                thesis.rating = "Hold"
+
+        # Conviction level based on macro score
+        if result.macro_analysis:
+            macro_score = result.macro_analysis.macro_score or 0
+            if abs(macro_score) >= 7:
+                thesis.conviction_level = "High"
+            elif abs(macro_score) >= 4:
+                thesis.conviction_level = "Medium"
+            else:
+                thesis.conviction_level = "Low"
+        else:
+            thesis.conviction_level = "Low"
+
+        # Key strengths and weaknesses from peer analysis
+        if result.peer_analysis:
+            if result.peer_analysis.valuation_verdict and "undervalued" in result.peer_analysis.valuation_verdict.lower():
+                thesis.key_strengths.append("Trading below peer valuation")
+            if result.stock_metrics and result.stock_metrics.roe and result.stock_metrics.roe > 15:
+                thesis.key_strengths.append(f"Strong ROE ({result.stock_metrics.roe:.1f}%)")
+            if result.stock_metrics and result.stock_metrics.debt_to_equity and result.stock_metrics.debt_to_equity > 2:
+                thesis.key_weaknesses.append(f"High debt levels (D/E: {result.stock_metrics.debt_to_equity:.1f})")
+
+        # Catalysts and risks from macro analysis
+        if result.macro_analysis:
+            thesis.catalysts = [impact.description for impact in result.macro_analysis.impacts if impact.impact_direction == "Positive"][:3]
+            thesis.risks = [impact.description for impact in result.macro_analysis.impacts if impact.impact_direction == "Negative"][:3]
+
+        # Price target (simplified: based on peer average P/E)
+        if result.peer_analysis and result.peer_analysis.avg_forward_pe and result.stock_metrics and result.stock_metrics.net_income:
+            estimated_eps = result.stock_metrics.earnings_per_share or (result.stock_metrics.net_income / 1_000_000)
+            if estimated_eps and estimated_eps > 0:
+                thesis.price_target = estimated_eps * result.peer_analysis.avg_forward_pe
+
+        # Summary thesis
+        if thesis.rating and result.stock_info:
+            thesis.thesis_summary = f"{result.stock_info.name} ({result.target_ticker}) is rated {thesis.rating} with {thesis.conviction_level} conviction based on valuation and macro outlook."
+
+        # Set other fields
+        thesis.time_horizon = "6-12 months"
+        thesis.confidence_score = 65 if thesis.rating else 40
+
+        return thesis
 
     def generate_report(self, result: AnalysisResult) -> str:
         """

@@ -1,5 +1,5 @@
 """
-COMPREHENSIVE TEST SUITE - Run this locally to catch errors BEFORE Colab
+COMPREHENSIVE TEST SUITE - Run this locally to catch errors
 Tests all imports, syntax, and basic functionality
 """
 
@@ -10,7 +10,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 print("\n" + "="*80)
-print("🧪 COMPREHENSIVE TEST SUITE")
+print("COMPREHENSIVE TEST SUITE")
 print("="*80 + "\n")
 
 # ============================================================
@@ -24,9 +24,9 @@ try:
         YAHOO_FINANCE_BASE_URL, DATAROMA_BASE_URL, USER_AGENT,
         MACRO_SECTOR_SENSITIVITY
     )
-    print("✅ Config loaded successfully\n")
+    print("[OK] Config loaded successfully\n")
 except Exception as e:
-    print(f"❌ Config error: {e}\n")
+    print(f"[FAIL] Config error: {e}\n")
     sys.exit(1)
 
 # ============================================================
@@ -40,9 +40,9 @@ try:
         clean_percentage, extract_range, sanitize_string
     )
     from src.utils.calculations import FinancialCalculator, PeerAnalyzer
-    print("✅ Utils loaded successfully\n")
+    print("[OK] Utils loaded successfully\n")
 except Exception as e:
-    print(f"❌ Utils error: {e}\n")
+    print(f"[FAIL] Utils error: {e}\n")
     sys.exit(1)
 
 # ============================================================
@@ -55,9 +55,9 @@ try:
         PeerAnalysisResult, MacroAnalysisResult, MacroImpact,
         AnalysisResult, AnalysisConfig, CacheEntry
     )
-    print("✅ Models loaded successfully\n")
+    print("[OK] Models loaded successfully\n")
 except Exception as e:
-    print(f"❌ Models error: {e}\n")
+    print(f"[FAIL] Models error: {e}\n")
     sys.exit(1)
 
 # ============================================================
@@ -68,9 +68,9 @@ try:
     from src.scrapers.base_scraper import BaseScraper, ScraperError, NoDataError, TickerNotFoundError
     from src.scrapers.yahoo_scraper import YahooFinanceScraper
     from src.scrapers.dataroma_scraper import DataromaScraper
-    print("✅ Scrapers loaded successfully\n")
+    print("[OK] Scrapers loaded successfully\n")
 except Exception as e:
-    print(f"❌ Scrapers error: {e}\n")
+    print(f"[FAIL] Scrapers error: {e}\n")
     sys.exit(1)
 
 # ============================================================
@@ -79,9 +79,9 @@ except Exception as e:
 print("TEST 5: Loading database...")
 try:
     from src.database.cache import CacheManager
-    print("✅ Database loaded successfully\n")
+    print("[OK] Database loaded successfully\n")
 except Exception as e:
-    print(f"❌ Database error: {e}\n")
+    print(f"[FAIL] Database error: {e}\n")
     sys.exit(1)
 
 # ============================================================
@@ -91,11 +91,10 @@ print("TEST 6: Loading agents...")
 try:
     from src.agents.peer_comparison import PeerComparisonAgent
     from src.agents.macro_analyst import MacroAnalyst
-    from src.agents.colab_generator import ColabGenerator
     from src.agents.research_manager import ResearchManager
-    print("✅ Agents loaded successfully\n")
+    print("[OK] Agents loaded successfully\n")
 except Exception as e:
-    print(f"❌ Agents error: {e}\n")
+    print(f"[FAIL] Agents error: {e}\n")
     import traceback
     traceback.print_exc()
     sys.exit(1)
@@ -110,23 +109,23 @@ try:
     assert clean_numeric_value("500M") == 5e8, "clean_numeric_value failed"
     assert normalize_ticker("aapl") == "AAPL", "normalize_ticker failed"
     assert validate_ticker("AAPL") == True, "validate_ticker failed"
-    print("  ✓ Data cleaning functions work\n")
+    print("  [OK] Data cleaning functions work\n")
 
     # Test calculations
     calc = FinancialCalculator()
     pe = calc.calculate_pe_ratio(100, 5)
     assert pe == 20, f"P/E calculation failed: {pe}"
-    print("  ✓ FinancialCalculator works\n")
+    print("  [OK] FinancialCalculator works\n")
 
     # Test peer analyzer
     analyzer = PeerAnalyzer()
     avg = analyzer.calculate_average_metric([10, 20, 30])
     assert avg == 20, f"Average calculation failed: {avg}"
-    print("  ✓ PeerAnalyzer works\n")
+    print("  [OK] PeerAnalyzer works\n")
 
-    print("✅ Function tests passed\n")
+    print("[OK] Function tests passed\n")
 except Exception as e:
-    print(f"❌ Function test error: {e}\n")
+    print(f"[FAIL] Function test error: {e}\n")
     import traceback
     traceback.print_exc()
     sys.exit(1)
@@ -152,9 +151,9 @@ try:
 
     result = AnalysisResult(target_ticker="AAPL")
 
-    print("✅ Model instantiation passed\n")
+    print("[OK] Model instantiation passed\n")
 except Exception as e:
-    print(f"❌ Model instantiation error: {e}\n")
+    print(f"[FAIL] Model instantiation error: {e}\n")
     import traceback
     traceback.print_exc()
     sys.exit(1)
@@ -165,9 +164,9 @@ except Exception as e:
 print("TEST 9: Testing ResearchManager instantiation...")
 try:
     manager = ResearchManager(use_cache=False)
-    print("✅ ResearchManager instantiated successfully\n")
+    print("[OK] ResearchManager instantiated successfully\n")
 except Exception as e:
-    print(f"❌ ResearchManager error: {e}\n")
+    print(f"[FAIL] ResearchManager error: {e}\n")
     import traceback
     traceback.print_exc()
     sys.exit(1)
@@ -176,9 +175,9 @@ except Exception as e:
 # SUMMARY
 # ============================================================
 print("="*80)
-print("✅ ALL TESTS PASSED!")
+print("ALL TESTS PASSED!")
 print("="*80)
 print("\nCode is ready for:")
-print("  ✓ Local testing")
-print("  ✓ Google Colab deployment")
-print("  ✓ Production use\n")
+print("  [OK] Local testing (Streamlit)")
+print("  [OK] HTML website generation")
+print("  [OK] Production use\n")
